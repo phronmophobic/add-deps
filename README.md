@@ -13,7 +13,7 @@ Create an alias for add-deps
 ```
 ```clojure
   :add-deps {:replace-deps
-             {com.phronemophobic/add-deps {:mvn/version "1.0-SNAPSHOT"}}
+             {com.phronemophobic/add-deps {:mvn/version "1.0"}}
              :exec-fn com.phronemophobic.add-deps/-main}
 ```
 ```clojure

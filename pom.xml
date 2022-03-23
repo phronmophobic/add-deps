@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.phronemophobic</groupId>
   <artifactId>add-deps</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <name>com.phronemophobic/add-deps</name>
   <description>UI for adding clojar deps.</description>
   <url>https://github.com/com.phronemophobic/add-deps</url>
@@ -22,7 +22,7 @@
     <url>https://github.com/com.phronemophobic/add-deps</url>
     <connection>scm:git:git://github.com/com.phronemophobic/add-deps.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/com.phronemophobic/add-deps.git</developerConnection>
-    <tag>v0.1.0-SNAPSHOT</tag>
+    <tag>v0.1.0</tag>
   </scm>
   <dependencies>
     <dependency>
