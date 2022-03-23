@@ -26,7 +26,10 @@ Create an alias for add-deps
 ```
 
 Run add deps:
+
+```sh
 $ clojure -X:add-deps
+```
 
 ## License
 
