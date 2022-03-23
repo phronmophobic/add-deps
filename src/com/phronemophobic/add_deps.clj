@@ -499,7 +499,13 @@
 
 
 
-(defn -main [& args]
-  (backend/run-sync (membrane.component/make-app #'libs-search {:libs libs :search-text ""})))
+(defn -main
+  ([]
+   (-main {}))
+  ([opts]
+   (backend/run-sync (membrane.component/make-app #'libs-search {:libs libs :search-text ""})
+                     {:window-title "Add Deps"
+                      :window-start-width 800
+                      :window-start-height 808})))
 
 
