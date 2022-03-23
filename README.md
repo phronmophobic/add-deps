@@ -8,6 +8,14 @@ Swing GUI application for adding clojars deps to deps.edn projects.
 
 ## Usage
 
+### Try it!
+
+```sh
+clojure  -Sdeps '{:replace-deps {com.phronemophobic/add-deps {:mvn/version "1.0"}}}' -M -m com.phronemophobic.add-deps
+```
+
+### Alias
+
 Create an alias for add-deps
 
 ```clojure
