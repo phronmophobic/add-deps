@@ -2,6 +2,10 @@
 
 Swing GUI application for adding clojars deps to deps.edn projects.
 
+## Screenshot
+
+![add-deps](/add-deps.png?raw=true)
+
 ## Usage
 
 Create an alias for add-deps

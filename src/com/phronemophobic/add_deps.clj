@@ -509,3 +509,6 @@
                       :window-start-height 808})))
 
 
+(comment
+  (backend/save-image "add-deps.png" ((membrane.component/make-app #'libs-search {:libs libs :search-text "graph"})) )
+  ,)
