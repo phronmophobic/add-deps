@@ -1,0 +1,13 @@
+{:paths ["src" "resources"]
+ :deps {org.clojure/clojure {:mvn/version "1.10.3"}
+        com.phronemophobic/membrane {:mvn/version "0.9.31.8-beta"}
+        borkdude/rewrite-edn {:mvn/version "0.1.0"}}
+ :aliases
+ {:run-m {:main-opts ["-m" "com.phronemophobic.add-deps"]}
+  
+  :uberjar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.216"}}
+            :exec-fn hf.depstar/uberjar
+            :exec-args {:aot true
+                        :jar "add-deps.jar"
+                        :main-class "com.phronemophobic.add-deps"
+                        :sync-pom true}}}}
