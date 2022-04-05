@@ -10,8 +10,10 @@ Swing GUI application for adding clojars deps to deps.edn projects.
 
 ### Try it!
 
+From inside your clojure project:
+
 ```sh
-clojure  -Sdeps '{:replace-deps {com.phronemophobic/add-deps {:mvn/version "1.0"}}}' -M -m com.phronemophobic.add-deps
+clojure  -Sdeps '{:deps {com.phronemophobic/add-deps {:mvn/version "1.0"}}}' -M -m com.phronemophobic.add-deps
 ```
 
 ### Alias
