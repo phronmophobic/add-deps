@@ -1,7 +1,8 @@
 {:paths ["src" "resources"]
  :deps {org.clojure/clojure {:mvn/version "1.10.3"}
         com.phronemophobic/membrane {:mvn/version "0.9.31.8-beta"}
-        borkdude/rewrite-edn {:mvn/version "0.1.0"}}
+        borkdude/rewrite-edn {:mvn/version "0.1.0"}
+        org.clojure/data.json {:mvn/version "2.4.0"}}
  :aliases
  {:run-m {:main-opts ["-m" "com.phronemophobic.add-deps"]}
 
