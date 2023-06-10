@@ -1,6 +1,11 @@
 {:paths ["src" "resources"]
- :deps {org.clojure/clojure {:mvn/version "1.10.3"}
-        com.phronemophobic/membrane {:mvn/version "0.9.31.8-beta"}
+ :deps {org.clojure/clojure {:mvn/version "1.12.0-alpha3"}
+
+        org.clojure/tools.deps {:mvn/version "0.18.1354"}
+        com.phronemophobic/membrane {:mvn/version "0.12.2-beta"}
+        com.phronemophobic/membrane.tableview  {:git/url "https://github.com/phronmophobic/membrane.tableview"
+                                                :git/sha "1e7184db3b0867723c83ad2755871606a2e94c3c"}
+
         borkdude/rewrite-edn {:mvn/version "0.1.0"}
         org.clojure/data.json {:mvn/version "2.4.0"}}
  :aliases
@@ -13,5 +18,16 @@
   :deploy {:replace-deps {slipset/deps-deploy {:mvn/version "0.2.0"}}
            :exec-fn deps-deploy.deps-deploy/deploy
            :exec-args {:installer :remote :artifact "add-deps.jar"}}
+
+  :project {:jvm-opts ["-Xmx8G"]
+            :extra-deps
+            {com.phronemophobic.membrane/skialib-macosx-aarch64 { :mvn/version "0.12-beta"
+                                                                 ;;:local/root "../membrane2/csource/macos-aarch64"
+                                                                 }
+             com.phronemophobic/spreadsheet {:local/root "../spreadsheet"}
+             com.phronemophobic/schematic {:local/root "../schematic"}
+             com.phronemophobic/membrane {:mvn/version "0.12.2-beta"
+                                          ;;:local/root "../membrane2"
+                                          }}}
 
   }}
