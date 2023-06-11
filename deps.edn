@@ -3,6 +3,7 @@
 
         org.clojure/tools.deps {:mvn/version "0.18.1354"}
         com.phronemophobic/membrane {:mvn/version "0.12.2-beta"}
+        com.phronemophobic.membrane/skialib-macosx-aarch64 {:mvn/version "0.12-beta"}
         com.phronemophobic/membrane.tableview  {:git/url "https://github.com/phronmophobic/membrane.tableview"
                                                 :git/sha "1e7184db3b0867723c83ad2755871606a2e94c3c"}
 

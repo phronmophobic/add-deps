@@ -13,6 +13,7 @@
                                         defui]
              :as component]
             [membrane.skia :as backend]
+            membrane.skia.paragraph
             [clojure.java.shell :as sh]
             [clojure.tools.deps :as deps]
             [clojure.repl.deps :as repl.deps]
