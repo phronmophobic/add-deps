@@ -25,37 +25,47 @@
            java.util.zip.GZIPInputStream)
   (:gen-class))
 
+(defn gzip-stream [is]
+  (GZIPInputStream. is))
+
+(let [name->lib (memoize
+                 (fn [libs]
+                   (into {}
+                         (map (juxt :name identity))
+                         libs)))]
+  (defn get-by-name [libs name]
+    ((name->lib libs) name)))
+
 (defn filter-table [filt selection search-text libs ]
   (let [libs (case filt
                :all libs
                :installed (vals (:installed selection))
                :change
                (let [{:keys [remove add installed]} selection]
-                (into []
-                      (concat
-                       (keep (fn [lib]
-                               (get installed lib))
-                             remove)
-                       (filter (fn [{:keys [lib]}]
-                                 (contains? add lib))
-                               libs)))))]
+                 (into []
+                       (concat
+                        (keep (fn [lib]
+                                (get installed lib))
+                              remove)
+                        (map (fn [lib-name]
+                               (get-by-name libs lib-name))
+                             add)))))]
     (->> libs
          (filter #(or
                    (when-let [desc (:description % "")]
                      (str/includes? desc search-text))
-                   (str/includes? (-> % :lib name) search-text)))
-         (sort-by :stars)
+                   (str/includes? (-> % :artifact-id name) search-text)))
+         (sort-by :score)
          reverse
          (map
           (fn [m]
             (into []
                   (map (fn [k]
                          [m k]))
-                  [ ;;:include?
-                   #(-> % :lib namespace)
-                   #(-> % :lib name)
+                  [:group-id
+                   :artifact-id
                    :description
-                   :stars
+                   :score
                    :url])))))
   )
 
@@ -70,7 +80,11 @@
                        (comp (filter (fn [[lib m]]
                                        (empty? (sequence cat (:parents m)))))
                              (map (fn [[lib m]]
-                                    [lib (assoc m :lib lib)])))
+                                    [lib
+                                     (assoc m
+                                            :name lib
+                                            :artifact-id (name lib)
+                                            :group-id (namespace lib))])))
                        (:libs basis))]
     {:installed top-deps
      :add #{}
@@ -84,9 +98,9 @@
     (edn/read rdr)))
 
 
-
+(def star-factor 70)
 (def releases-url "https://api.github.com/repos/phronmophobic/dewey/releases/latest")
-(defn latest-deps-libs []
+(defn latest-git-libs []
   (let [release-info (json/read-str (slurp (io/as-url releases-url)))
         release-url (->
                      release-info
@@ -96,11 +110,69 @@
                                 (= "deps-libs.edn.gz" (get p "name")))))
                      first
                      (get "browser_download_url"))
-        deps-libs (read-edn-gz release-url)]
-    deps-libs))
+        git-libs (read-edn-gz release-url)
+        git-libs (->> git-libs
+                      (map (fn [[nm m]]
+                             (assoc m
+                                    :name nm
+                                    :score  (* star-factor
+                                               (:stars m 0))
+                                    :group-id (namespace nm)
+                                    :artifact-id (name nm)))))]
+    git-libs))
+
+(defn latest-clojars-libs []
+  (let [
+        stats (edn/read-string
+               (slurp (io/as-url "https://repo.clojars.org/stats/all.edn")))
+        downloads (->>
+                   stats
+                   (into {} (map (fn [[lib stats]] [lib (reduce + (vals stats))]))))
+        feed-str (with-open
+                   [is
+                    (io/input-stream
+                     (io/as-url "https://clojars.org/repo/feed.clj.gz"))
+                    gz
+                    (gzip-stream is)]
+                   (slurp gz))
+        libs (->>
+              feed-str
+              clojure.string/split-lines
+              (map edn/read-string)
+              (map (fn [p]
+                     (assoc p
+                            :name (symbol (:group-id p)
+                                          (:artifact-id p)))))
+              (map
+               (fn [p]
+                 (assoc p
+                        :downloads
+                        (or
+                         (downloads [(:group-id p) (:artifact-id p)])
+                         0))))
+              (map (fn [p]
+                     (assoc p
+                            :score (:downloads p))))
+              (map (fn [m]
+                     (assoc m
+                            :versions
+                            (map
+                             (fn [p] (do #:mvn{:version p}))
+                             (:versions m))))))]
+    libs)
+  )
+
+(comment
+
+  (def clojibs (latest-clojars-libs))
+  (def gitlibs (latest-git-libs))
+  ,)
 
 (defn initial-state []
-  (let [deps-libs (latest-deps-libs)
+  (let [deps-libs (into []
+                        cat
+                        [(latest-clojars-libs)
+                         (latest-git-libs)])
         state
         {:search-text ""
          :filt :all
@@ -108,8 +180,7 @@
          :page-size 15
          :page 0
          :selection (initial-selection)
-         :deps-libs deps-libs
-         :data (->> (vals deps-libs)
+         :data (->> deps-libs
                     (filter (fn [m]
                               (seq (:versions m)))))}]
     (assoc state
@@ -181,22 +252,24 @@
     (dispatch! ::set-status "applying updates")
     (try
       (let [selection (dispatch! :get $selection)
-            deps-libs (dispatch! :get (specter/path :deps-libs))
 
             edn-string (slurp "deps.edn")
             nodes (r/parse-string edn-string)
+            libs (dispatch! :get (specter/path :data))
 
             ;; add
             lib-coords
             (into {}
                   (map (fn [name]
-                         (let [lib (get deps-libs name)
+                         (let [lib (get-by-name libs name)
                                coord (-> lib
                                          :versions
                                          first)
-                               coord (assoc coord
-                                            :git/url (:url lib))]
-                           [(:lib lib)
+                               coord (if (:mvn/version coord)
+                                       coord
+                                       (assoc coord
+                                              :git/url (:url lib)))]
+                           [(:name lib)
                             coord])))
                   (:add selection))
             nodes (reduce (fn [nodes [dep coord]]
@@ -241,7 +314,7 @@
         lib (-> cell
                     meta
                     :lib)
-        lib-name (:lib lib)
+        lib-name (:name lib)
         body (ui/fixed-bounds [w h]
                               cell)
         bg-color (cond
@@ -339,11 +412,15 @@
 
 
 
-;; load data
+
 (comment
 
   (require '[com.phronemophobic.membrane.schematic3
              :as schematic])
+
+;; load data
+  (def deps-libs (latest-deps-libs))
+  (schematic/load!)
 
   (schematic/add-component!
    #'my-tableview
@@ -353,11 +430,9 @@
    #'maybe-button
    {:show? true
   :text "button"})
-
-
-  (def deps-libs (latest-deps-libs))
-  (schematic/load!)
   (schematic/show!)
+
+  
 
   ,)
 
