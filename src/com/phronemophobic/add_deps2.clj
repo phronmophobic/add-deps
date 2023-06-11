@@ -705,7 +705,7 @@
                                                         #uuid "9ca0d833-35a5-40a8-bbae-dede23196548"}}))))
 
 
-(defn start-app [opts]
+(defn -main [opts]
   
   (def app-state (atom (initial-state)))
   (add-watch app-state
